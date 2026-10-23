@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Archivo Urbano | Curaduría UNQ</title>
   
-  <!-- Tailwind CSS para el diseño -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Leaflet CSS y JS (Mapas Open Source) -->
+  <!-- Leaflet CSS y JS (Mapas) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Fuente técnica estilo archivo -->
+  <!-- PapaParse (Lector de Google Sheets CSV) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
 
   <style>
@@ -22,7 +24,6 @@
     h1, h2, h3, .font-title {
       font-family: 'Syne', sans-serif;
     }
-    /* Filtro oscuro para que el mapa combine con la estética urbana */
     .dark-map .leaflet-tile {
       filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
     }
@@ -30,7 +31,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- CABECERA / MANIFIESTO -->
+  <!-- CABECERA -->
   <header class="border-b border-zinc-800 px-6 py-8 md:px-12">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
       <div>
@@ -41,11 +42,11 @@
           Archivo Urbano
         </h1>
         <p class="text-zinc-400 text-sm mt-2 max-w-xl">
-          Registro, archivo y catalogación del arte callejero y la memoria efímera de los muros del conurbano sur (Quilmes, Bernal y alrededores).
+          Registro, archivo y catalogación del arte callejero y la memoria efímera de los muros del conurbano sur.
         </p>
       </div>
 
-      <!-- FILTROS POR CATEGORÍA -->
+      <!-- FILTROS -->
       <div class="flex flex-wrap gap-2 text-xs">
         <button onclick="filtrar('todas')" class="filtro-btn px-3 py-1.5 border border-white bg-white text-black uppercase font-bold transition">Todas</button>
         <button onclick="filtrar('wildstyle')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Wildstyle</button>
@@ -56,28 +57,26 @@
     </div>
   </header>
 
-  <!-- GRILLA DE OBRAS (GALERÍA) -->
+  <!-- GALERÍA PRINCIPAL -->
   <main class="max-w-7xl mx-auto p-6 md:p-12 flex-grow w-full">
     <div id="galeria" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Las tarjetas se generan dinámicamente con JavaScript -->
+      <p id="cargando" class="text-zinc-500 text-sm">Cargando archivo de obras...</p>
     </div>
   </main>
 
-  <!-- MODAL DE FICHA CURATORIAL DETALLADA -->
+  <!-- MODAL DE DETALLE CURATORIAL -->
   <div id="modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-zinc-950 border border-zinc-800 max-w-5xl w-full max-h-[92vh] overflow-y-auto rounded-none flex flex-col md:flex-row relative">
-      
-      <!-- Botón cerrar -->
       <button onclick="cerrarModal()" class="absolute top-4 right-4 z-20 bg-zinc-800 hover:bg-zinc-700 text-white w-9 h-9 flex items-center justify-center font-bold text-sm">
         ✕
       </button>
 
-      <!-- Columna Izquierda: Imagen grande -->
+      <!-- Foto Grande -->
       <div class="md:w-3/5 bg-zinc-900 flex items-center justify-center border-b md:border-b-0 md:border-r border-zinc-800 p-2">
         <img id="modal-img" src="" alt="Obra" class="max-h-[70vh] w-auto object-contain">
       </div>
 
-      <!-- Columna Derecha: Información Curatorial y Mapa -->
+      <!-- Ficha y Mapa -->
       <div class="md:w-2/5 p-6 flex flex-col justify-between">
         <div class="space-y-4">
           <div>
@@ -90,7 +89,7 @@
             <div><strong class="text-zinc-500">UBICACIÓN:</strong> <span id="modal-ubicacion"></span></div>
             <div><strong class="text-zinc-500">SOPORTE:</strong> <span id="modal-soporte"></span></div>
             <div><strong class="text-zinc-500">TÉCNICA:</strong> <span id="modal-tecnica"></span></div>
-            <div><strong class="text-zinc-500">FECHA REGISTRO:</strong> <span id="modal-fecha"></span></div>
+            <div><strong class="text-zinc-500">FECHA:</strong> <span id="modal-fecha"></span></div>
             <div><strong class="text-zinc-500">ESTADO:</strong> <span id="modal-estado" class="text-emerald-400"></span></div>
           </div>
 
@@ -100,7 +99,6 @@
           </div>
         </div>
 
-        <!-- Mini Mapa Embebido de Ubicación Exacta -->
         <div class="mt-6 border-t border-zinc-800 pt-4">
           <div class="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 flex justify-between">
             <span>Coordenadas territoriales</span>
@@ -117,18 +115,16 @@
     Proyecto Curatorial Colectivo • Estudiantes Lic. en Artes / UNQ • Quilmes, Buenos Aires.
   </footer>
 
-  <!-- SCRIPT CON DATOS Y LÓGICA -->
+  <!-- LÓGICA JAVASCRIPT -->
   <script>
-    // ==========================================
-    // 1. BASE DE DATOS DE OBRAS (FÁCIL DE EDITAR)
-    // ==========================================
-    // Para sumar fotos nuevas, simplemente copiás y pegás un bloque {} nuevo acá abajo:
-   // 1. Pegá acá tu enlace de Google Sheets (publicado como .CSV):
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbDduJhrTzgjJh5J4KNa9Pgr7khniXqaxpuo2rYLp8MdGRP9ejRwtVd_T9htdTok2iaoXckkQmwjoR/pub?output=csv";
+    // -------------------------------------------------------------
+    // PEGA ACÁ TU ENLACE DE GOOGLE SHEETS (DEBE TERMINAR EN output=csv)
+    // -------------------------------------------------------------
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbDduJhrTzgjJh5J4KNa9Pgr7khniXqaxpuo2rYLp8MdGRP9ejRwtVd_T9htdTok2iaoXckkQmwjoR/pub?gid=0&single=true&output=csv";
 
     let obrasData = [];
+    const galeria = document.getElementById("galeria");
 
-    // Función que descarga y lee tu planilla de Google en tiempo real
     async function cargarDatosDesdeSheet() {
       try {
         const response = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -138,48 +134,50 @@
           header: true,
           skipEmptyLines: true,
           complete: function(results) {
-            // Convierte cada fila de la planilla en un objeto legible
             obrasData = results.data.map((fila, index) => ({
-              id: fila.id ? parseInt(fila.id) : index + 1,
+              id: fila.id ? parseInt(fila.id) : (index + 1),
               titulo: fila.titulo || "Sin título",
-              categoria: (fila.categoria || "").trim().toLowerCase(),
+              categoria: (fila.categoria || "").toString().trim().toLowerCase(),
               autor: fila.autor || "Anónimo",
               ubicacion: fila.ubicacion || "",
               soporte: fila.soporte || "",
               tecnica: fila.tecnica || "",
               fecha: fila.fecha || "",
               estado: fila.estado || "Activa",
-              coords: [parseFloat(fila.lat) || -34.72, parseFloat(fila.lng) || -58.26],
-              imagen: fila.imagen || "",
+              coords: [
+                parseFloat(fila.lat) || -34.7200,
+                parseFloat(fila.lng) || -58.2600
+              ],
+              imagen: fila.imagen ? fila.imagen.trim() : "",
               curaduria: fila.curaduria || ""
             }));
 
-            // Carga las tarjetas en la galería
             cargarGaleria(obrasData);
           }
         });
       } catch (error) {
-        console.error("Error al conectar con la planilla:", error);
+        console.error("Error al cargar la planilla:", error);
+        galeria.innerHTML = "<p class='text-red-400 text-xs'>Error al conectar con la planilla de Google. Verificá que esté publicada en la web como .csv</p>";
       }
     }
 
-    // ==========================================
-    // 2. RENDERIZADO DE LA GALERÍA
-    // ==========================================
-    const galeria = document.getElementById("galeria");
-
     function cargarGaleria(obras) {
       galeria.innerHTML = "";
+      if (obras.length === 0) {
+        galeria.innerHTML = "<p class='text-zinc-500 text-xs'>No hay obras para mostrar en esta categoría.</p>";
+        return;
+      }
+
       obras.forEach(obra => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "group border border-zinc-800 bg-zinc-900/40 hover:border-zinc-500 transition duration-300 cursor-pointer overflow-hidden flex flex-col justify-between";
         tarjeta.onclick = () => abrirModal(obra.id);
 
-        tarjeta.innerHTML = /////////////////////////////////////////
+        tarjeta.innerHTML = `
           <div class="h-64 overflow-hidden bg-zinc-950 relative">
-            <img src="${obra.img}" alt="${obra.titulo}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100">
+            <img src="${obra.imagen}" alt="${obra.titulo}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100" onerror="this.src='https://via.placeholder.com/600x400/18181b/71717a?text=Foto+no+disponible'">
             <span class="absolute bottom-2 left-2 text-[10px] bg-black/80 px-2 py-0.5 uppercase border border-zinc-700">
-              ${obra.categoria}
+              ${obra.categoria || 'Obra'}
             </span>
           </div>
           <div class="p-4 border-t border-zinc-800">
@@ -195,35 +193,31 @@
       });
     }
 
-    // ==========================================
-    // 3. FILTROS
-    // ==========================================
     function filtrar(categoria) {
       document.querySelectorAll(".filtro-btn").forEach(btn => {
         btn.classList.remove("bg-white", "text-black", "border-white");
         btn.classList.add("text-zinc-400", "border-zinc-700");
       });
-      event.target.classList.add("bg-white", "text-black", "border-white");
-      event.target.classList.remove("text-zinc-400", "border-zinc-700");
+      if (event && event.target) {
+        event.target.classList.add("bg-white", "text-black", "border-white");
+        event.target.classList.remove("text-zinc-400", "border-zinc-700");
+      }
 
       if (categoria === 'todas') {
         cargarGaleria(obrasData);
       } else {
-        const filtradas = obrasData.filter(o => o.categoria === categoria);
+        const filtradas = obrasData.filter(o => o.categoria.includes(categoria));
         cargarGaleria(filtradas);
       }
     }
 
-    // ==========================================
-    // 4. MODAL Y MAPA LEAFLET INTERACTIVO
-    // ==========================================
     let mapInstance = null;
 
     function abrirModal(id) {
       const obra = obrasData.find(o => o.id === id);
       if (!obra) return;
 
-      document.getElementById("modal-img").src = obra.img;//////////////////////
+      document.getElementById("modal-img").src = obra.imagen;
       document.getElementById("modal-titulo").innerText = obra.titulo;
       document.getElementById("modal-tag").innerText = obra.categoria;
       document.getElementById("modal-autor").innerText = "Autor/Registro: " + obra.autor;
@@ -237,7 +231,6 @@
 
       document.getElementById("modal").classList.remove("hidden");
 
-      // Inicializar o centrar mapa en las coordenadas
       setTimeout(() => {
         if (!mapInstance) {
           mapInstance = L.map('mapa-modal', { zoomControl: false }).setView(obra.coords, 15);
@@ -248,7 +241,6 @@
           mapInstance.setView(obra.coords, 15);
         }
 
-        // Limpiar pines viejos y poner el nuevo
         mapInstance.eachLayer((layer) => {
           if (layer instanceof L.Marker) mapInstance.removeLayer(layer);
         });
@@ -264,7 +256,7 @@
       document.getElementById("modal").classList.add("hidden");
     }
 
-    // Inicializar la web al cargar
+    // Iniciar carga
     cargarDatosDesdeSheet();
   </script>
 </body>
