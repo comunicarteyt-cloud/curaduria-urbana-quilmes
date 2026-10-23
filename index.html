@@ -123,218 +123,46 @@
     // 1. BASE DE DATOS DE OBRAS (FÁCIL DE EDITAR)
     // ==========================================
     // Para sumar fotos nuevas, simplemente copiás y pegás un bloque {} nuevo acá abajo:
-    const obrasData = [
-      {
-        id: 1,
-        titulo: "Bestiario Verde & Wildstyle",
-        categoria: "wildstyle",
-        autor: "Firma / Crew en muro",
-        ubicacion: "Bernal Oeste, frentes de galpones industriales",
-        soporte: "Muro perimetral de bloques de hormigón",
-        tecnica: "Aerosol a mano alzada",
-        fecha: "Octubre 2024",
-        estado: "Activa",
-        coords: [-34.7085, -58.2831],
-        imagen: "img/obra1.jpg", // acá pones la ruta a tu foto
-        curaduria: "Composición que combina una criatura reptiliana monocroma con tipografía wildstyle de alto contraste, articulando el bloque de hormigón con la vereda pública."
-      },
-      {
-        id: 2,
-        titulo: "Escorpiones en guardia",
-        categoria: "wildstyle",
-        autor: "Firma: LUZB",
-        ubicacion: "Quilmes Residencial, muro de vivienda",
-        soporte: "Pared revocada y portón de chapa",
-        tecnica: "Aerosol multicapa y brillos",
-        fecha: "Octubre 2024",
-        estado: "Activa",
-        coords: [-34.7231, -58.2589],
-        imagen: "img/obra2.jpg",
-        curaduria: "Pieza centrada flanqueada por dos escorpiones en claroscuro. La obra coloniza la puerta de chapa lateral unificando la fachada urbana."
-      },
-      {
-        id: 3,
-        titulo: "A reír que nacimos llorando",
-        categoria: "frases",
-        autor: "Intervención anónima",
-        ubicacion: "Rampa paso peatonal bajo vías del Tren Roca",
-        soporte: "Muro de contención de hormigón",
-        tecnica: "Aerosol amarillo / Caligrafía directa",
-        fecha: "Septiembre 2024",
-        estado: "Activa",
-        coords: [-34.7176, -58.2678],
-        imagen: "img/obra3.jpg",
-        curaduria: "Poesía de tránsito. Acompaña el descenso del transeúnte hacia el bajo vías, generando un choque poético con el entorno de catenarias y rejas metálicas."
-      },
-      {
-        id: 4,
-        titulo: "Palimpsesto del Bajo Nivel: Ricardo Iorio",
-        categoria: "palimpsesto",
-        autor: "Múltiples intervenciones colectivas",
-        ubicacion: "Túnel peatonal bajo vías",
-        soporte: "Pared subterránea de paso público",
-        tecnica: "Paste-up (afiche), aerosol, stencil y tags",
-        fecha: "Noviembre 2023 - 2024",
-        estado: "Evolución constante / Capas superpuestas",
-        coords: [-34.7180, -58.2672],
-        imagen: "img/obra4.jpg",
-        curaduria: "Espacio de memoria popular y santoral suburbano con homenaje a Ricardo Iorio ('La H no murió'), rodeado por capas continuas de tags y adhesivos."
-      },
-      {
-        id: 5,
-        titulo: "CBA Perro con visera",
-        categoria: "personajes",
-        autor: "Firma: CBA PERRO",
-        ubicacion: "Quilmes, esquina fabril",
-        soporte: "Pared de ladrillo visto a la vista",
-        tecnica: "Aerosol azul y blanco sobre ladrillo",
-        fecha: "Agosto 2024",
-        estado: "Activa",
-        coords: [-34.7295, -58.2520],
-        imagen: "img/obra5.jpg",
-        curaduria: "Ícono gráfico sintético de la cultura de esquina conurbana. El uso del contraste entre el azul brillante y el ladrillo crudo otorga alta visibilidad al paso vehicular."
-      },
-      {
-       id: 6,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 7,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 8,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 9,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 10,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 11,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 12,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 13,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 14,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-},
-{
-  id: 15,
-  titulo: "Título de la obra o S/T",
-  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
-  autor: "Firma identificable o Anónimo",
-  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
-  soporte: "Persiana metálica comercial / Muro de hormigón",
-  tecnica: "Aerosol negro / Stencil",
-  fecha: "Octubre 2024",
-  estado: "Activa",
-  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
-  imagen: "img/tu-nueva-foto.jpg",
-  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
-}
-    ];
+   // 1. Pegá acá tu enlace de Google Sheets (publicado como .CSV):
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbDduJhrTzgjJh5J4KNa9Pgr7khniXqaxpuo2rYLp8MdGRP9ejRwtVd_T9htdTok2iaoXckkQmwjoR/pub?gid=0&single=true&output=csv
+";
+
+    let obrasData = [];
+
+    // Función que descarga y lee tu planilla de Google en tiempo real
+    async function cargarDatosDesdeSheet() {
+      try {
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        const csvText = await response.text();
+
+        Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+            // Convierte cada fila de la planilla en un objeto legible
+            obrasData = results.data.map((fila, index) => ({
+              id: fila.id ? parseInt(fila.id) : index + 1,
+              titulo: fila.titulo || "Sin título",
+              categoria: (fila.categoria || "").trim().toLowerCase(),
+              autor: fila.autor || "Anónimo",
+              ubicacion: fila.ubicacion || "",
+              soporte: fila.soporte || "",
+              tecnica: fila.tecnica || "",
+              fecha: fila.fecha || "",
+              estado: fila.estado || "Activa",
+              coords: [parseFloat(fila.lat) || -34.72, parseFloat(fila.lng) || -58.26],
+              imagen: fila.imagen || "",
+              curaduria: fila.curaduria || ""
+            }));
+
+            // Carga las tarjetas en la galería
+            cargarGaleria(obrasData);
+          }
+        });
+      } catch (error) {
+        console.error("Error al conectar con la planilla:", error);
+      }
+    }
 
     // ==========================================
     // 2. RENDERIZADO DE LA GALERÍA
