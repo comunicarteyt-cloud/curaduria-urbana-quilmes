@@ -46,36 +46,36 @@
         </p>
       </div>
 
-      <!-- FILTROS -->
+      <!-- BOTONES DE FILTRO -->
       <div class="flex flex-wrap gap-2 text-xs">
-        <button onclick="filtrar('todas')"class="filtro-btn px-3 py-1.5 border border-white bg-white text-black uppercase font-bold transition">Todas</button>
-        <button onclick="filtrar('palimpsesto')"class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Palimpsestos</button>
-        <button onclick="filtrar('frases')"class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Frases</button>
-        <button onclick="filtrar('Graffitis')"class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Characters</button>
+        <button onclick="filtrar(this, 'todas')" class="filtro-btn px-3 py-1.5 border border-white bg-white text-black uppercase font-bold transition">Todas</button>
+        <button onclick="filtrar(this, 'palimpsesto')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Palimpsestos</button>
+        <button onclick="filtrar(this, 'frases')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Frases</button>
+        <button onclick="filtrar(this, 'personajes')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Characters</button>
       </div>
     </div>
   </header>
 
-  <!-- GALERÍA PRINCIPAL -->
+  <!-- GALERÍA DE OBRAS -->
   <main class="max-w-7xl mx-auto p-6 md:p-12 flex-grow w-full">
     <div id="galeria" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <p id="cargando" class="text-zinc-500 text-sm">Cargando archivo de obras...</p>
+      <p class="text-zinc-500 text-sm">Cargando archivo de obras...</p>
     </div>
   </main>
 
-  <!-- MODAL DE DETALLE CURATORIAL -->
+  <!-- FICHA TÉCNICA DETALLADA Y MAPA (VENTANA MODAL) -->
   <div id="modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-zinc-950 border border-zinc-800 max-w-5xl w-full max-h-[92vh] overflow-y-auto rounded-none flex flex-col md:flex-row relative">
       <button onclick="cerrarModal()" class="absolute top-4 right-4 z-20 bg-zinc-800 hover:bg-zinc-700 text-white w-9 h-9 flex items-center justify-center font-bold text-sm">
         ✕
       </button>
 
-      <!-- Foto Grande -->
+      <!-- Foto ampliada -->
       <div class="md:w-3/5 bg-zinc-900 flex items-center justify-center border-b md:border-b-0 md:border-r border-zinc-800 p-2">
         <img id="modal-img" src="" alt="Obra" class="max-h-[70vh] w-auto object-contain">
       </div>
 
-      <!-- Ficha y Mapa -->
+      <!-- Datos curatoriales y mapa -->
       <div class="md:w-2/5 p-6 flex flex-col justify-between">
         <div class="space-y-4">
           <div>
@@ -109,19 +109,20 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- PIE DE PÁGINA -->
   <footer class="border-t border-zinc-800 p-6 text-center text-xs text-zinc-500">
-    Proyecto Curatorial Colectivo • Estudiantes de Lic. en Artes y Tecnología / UNQ • Quilmes, Buenos Aires.
+    Proyecto Curatorial Colectivo • Estudiantes Lic. en Artes y tecnología / UNQ • Quilmes, Buenos Aires.
   </footer>
 
-  <!-- LÓGICA JAVASCRIPT -->
+  <!-- LÓGICA DE LA PÁGINA -->
   <script>
     
-    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbDduJhrTzgjJh5J4KNa9Pgr7khniXqaxpuo2rYLp8MdGRP9ejRwtVd_T9htdTok2iaoXckkQmwjoR/pub?gid=0&single=true&output=csv";
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSbDduJhrTzgjJh5J4KNa9Pgr7khniXqaxpuo2rYLp8MdGRP9ejRwtVd_T9htdTok2iaoXckkQmwjoR/pub?output=csv";
 
     let obrasData = [];
     const galeria = document.getElementById("galeria");
 
+    // 1. DESCARGA LOS DATOS DE LA PLANILLA EN VIVO
     async function cargarDatosDesdeSheet() {
       try {
         const response = await fetch(GOOGLE_SHEET_CSV_URL);
@@ -158,23 +159,24 @@
       }
     }
 
-   function cargarGaleria(obras) {
+    // 2. CREA LAS TARJETAS EN LA GALERÍA
+    function cargarGaleria(obras) {
       galeria.innerHTML = "";
-      if (obras.length === 0) {
-        galeria.innerHTML = "<p class='text-zinc-500 text-xs'>No hay obras para mostrar en esta categoría.</p>";
+      if (!obras || obras.length === 0) {
+        galeria.innerHTML = "<p class='text-zinc-500 text-xs col-span-full py-8'>No hay obras cargadas en esta categoría.</p>";
         return;
       }
 
-      obras.forEach((obra, index) => {
+      obras.forEach(obra => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "group border border-zinc-800 bg-zinc-900/40 hover:border-zinc-500 transition duration-300 cursor-pointer overflow-hidden flex flex-col justify-between";
         
-        // Al hacer clic, abre la obra directamente por su posición en la lista (abre SIEMPRE)
-        tarjeta.onclick = () => abrirModal(index);
+        // Abre la ficha pasando la obra directamente
+        tarjeta.onclick = () => abrirModal(obra);
 
         tarjeta.innerHTML = `
           <div class="h-64 overflow-hidden bg-zinc-950 relative">
-            <img src="${obra.imagen}" alt="${obra.titulo}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100" onerror="this.src='https://via.placeholder.com/600x400/18181b/71717a?text=Foto+no+disponible'">
+            <img src="${obra.imagen}" alt="${obra.titulo}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100" onerror="this.style.display='none'">
             <span class="absolute bottom-2 left-2 text-[10px] bg-black/80 px-2 py-0.5 uppercase border border-zinc-700">
               ${obra.categoria || 'Obra'}
             </span>
@@ -192,10 +194,33 @@
       });
     }
 
+    // 3. FILTRA POR CATEGORÍA Y PINTA EL BOTÓN ACTIVO
+    function filtrar(boton, categoria) {
+      document.querySelectorAll(".filtro-btn").forEach(btn => {
+        btn.classList.remove("bg-white", "text-black", "border-white");
+        btn.classList.add("text-zinc-400", "border-zinc-700");
+      });
+      if (boton) {
+        boton.classList.add("bg-white", "text-black", "border-white");
+        boton.classList.remove("text-zinc-400", "border-zinc-700");
+      }
+
+      if (categoria === 'todas') {
+        cargarGaleria(obrasData);
+      } else {
+        const busqueda = categoria.toLowerCase().trim();
+        const filtradas = obrasData.filter(obra => {
+          const cat = (obra.categoria || "").toLowerCase().trim();
+          return cat.includes(busqueda) || busqueda.includes(cat);
+        });
+        cargarGaleria(filtradas);
+      }
+    }
+
     let mapInstance = null;
 
-    function abrirModal(index) {
-      const obra = obrasData[index];
+    // 4. ABRE LA FICHA TÉCNICA Y CARGA EL MAPA
+    function abrirModal(obra) {
       if (!obra) return;
 
       document.getElementById("modal-img").src = obra.imagen;
@@ -210,10 +235,8 @@
       document.getElementById("modal-curaduria").innerText = obra.curaduria;
       document.getElementById("modal-coords").innerText = `${obra.coords[0]}, ${obra.coords[1]}`;
 
-      // Abre la ventana modal
       document.getElementById("modal").classList.remove("hidden");
 
-      // Carga el mapa centrado en las coordenadas de la obra
       setTimeout(() => {
         if (!mapInstance) {
           mapInstance = L.map('mapa-modal', { zoomControl: false }).setView(obra.coords, 15);
@@ -234,11 +257,13 @@
         mapInstance.invalidateSize();
       }, 200);
     }
+
+    // 5. CIERRA LA VENTANA MODAL
     function cerrarModal() {
       document.getElementById("modal").classList.add("hidden");
     }
 
-    // Iniciar carga
+    // ARRANCA LA CARGA AL ENTRAR A LA WEB
     cargarDatosDesdeSheet();
   </script>
 </body>
