@@ -161,17 +161,19 @@
       }
     }
 
-    function cargarGaleria(obras) {
+   function cargarGaleria(obras) {
       galeria.innerHTML = "";
       if (obras.length === 0) {
         galeria.innerHTML = "<p class='text-zinc-500 text-xs'>No hay obras para mostrar en esta categoría.</p>";
         return;
       }
 
-      obras.forEach(obra => {
+      obras.forEach((obra, index) => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "group border border-zinc-800 bg-zinc-900/40 hover:border-zinc-500 transition duration-300 cursor-pointer overflow-hidden flex flex-col justify-between";
-        tarjeta.onclick = () => abrirModal(obra.id);
+        
+        // Al hacer clic, abre la obra directamente por su posición en la lista (abre SIEMPRE)
+        tarjeta.onclick = () => abrirModal(index);
 
         tarjeta.innerHTML = `
           <div class="h-64 overflow-hidden bg-zinc-950 relative">
@@ -193,28 +195,10 @@
       });
     }
 
-    function filtrar(categoria) {
-      document.querySelectorAll(".filtro-btn").forEach(btn => {
-        btn.classList.remove("bg-white", "text-black", "border-white");
-        btn.classList.add("text-zinc-400", "border-zinc-700");
-      });
-      if (event && event.target) {
-        event.target.classList.add("bg-white", "text-black", "border-white");
-        event.target.classList.remove("text-zinc-400", "border-zinc-700");
-      }
-
-      if (categoria === 'todas') {
-        cargarGaleria(obrasData);
-      } else {
-        const filtradas = obrasData.filter(o => o.categoria.includes(categoria));
-        cargarGaleria(filtradas);
-      }
-    }
-
     let mapInstance = null;
 
-    function abrirModal(id) {
-      const obra = obrasData.find(o => o.id === id);
+    function abrirModal(index) {
+      const obra = obrasData[index];
       if (!obra) return;
 
       document.getElementById("modal-img").src = obra.imagen;
@@ -229,8 +213,10 @@
       document.getElementById("modal-curaduria").innerText = obra.curaduria;
       document.getElementById("modal-coords").innerText = `${obra.coords[0]}, ${obra.coords[1]}`;
 
+      // Abre la ventana modal
       document.getElementById("modal").classList.remove("hidden");
 
+      // Carga el mapa centrado en las coordenadas de la obra
       setTimeout(() => {
         if (!mapInstance) {
           mapInstance = L.map('mapa-modal', { zoomControl: false }).setView(obra.coords, 15);
@@ -251,7 +237,6 @@
         mapInstance.invalidateSize();
       }, 200);
     }
-
     function cerrarModal() {
       document.getElementById("modal").classList.add("hidden");
     }
