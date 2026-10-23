@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archivo Urbano | Curaduría UNQ</title>
+  
+  <!-- Tailwind CSS para el diseño -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS y JS (Mapas Open Source) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Fuente técnica estilo archivo -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Space Mono', monospace;
+      background-color: #0e0e10;
+      color: #e4e4e7;
+    }
+    h1, h2, h3, .font-title {
+      font-family: 'Syne', sans-serif;
+    }
+    /* Filtro oscuro para que el mapa combine con la estética urbana */
+    .dark-map .leaflet-tile {
+      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- CABECERA / MANIFIESTO -->
+  <header class="border-b border-zinc-800 px-6 py-8 md:px-12">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div>
+        <div class="inline-block bg-zinc-800 text-zinc-300 text-xs px-2 py-1 mb-3 uppercase tracking-widest border border-zinc-700">
+          Curaduría Territorial • Colectivo UNQ
+        </div>
+        <h1 class="text-3xl md:text-5xl font-extrabold uppercase tracking-tight text-white">
+          Archivo Urbano
+        </h1>
+        <p class="text-zinc-400 text-sm mt-2 max-w-xl">
+          Registro, archivo y catalogación del arte callejero y la memoria efímera de los muros del conurbano sur (Quilmes, Bernal y alrededores).
+        </p>
+      </div>
+
+      <!-- FILTROS POR CATEGORÍA -->
+      <div class="flex flex-wrap gap-2 text-xs">
+        <button onclick="filtrar('todas')" class="filtro-btn px-3 py-1.5 border border-white bg-white text-black uppercase font-bold transition">Todas</button>
+        <button onclick="filtrar('wildstyle')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Wildstyle</button>
+        <button onclick="filtrar('palimpsesto')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Palimpsestos</button>
+        <button onclick="filtrar('frases')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Frases</button>
+        <button onclick="filtrar('personajes')" class="filtro-btn px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white uppercase transition">Characters</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- GRILLA DE OBRAS (GALERÍA) -->
+  <main class="max-w-7xl mx-auto p-6 md:p-12 flex-grow w-full">
+    <div id="galeria" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Las tarjetas se generan dinámicamente con JavaScript -->
+    </div>
+  </main>
+
+  <!-- MODAL DE FICHA CURATORIAL DETALLADA -->
+  <div id="modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-950 border border-zinc-800 max-w-5xl w-full max-h-[92vh] overflow-y-auto rounded-none flex flex-col md:flex-row relative">
+      
+      <!-- Botón cerrar -->
+      <button onclick="cerrarModal()" class="absolute top-4 right-4 z-20 bg-zinc-800 hover:bg-zinc-700 text-white w-9 h-9 flex items-center justify-center font-bold text-sm">
+        ✕
+      </button>
+
+      <!-- Columna Izquierda: Imagen grande -->
+      <div class="md:w-3/5 bg-zinc-900 flex items-center justify-center border-b md:border-b-0 md:border-r border-zinc-800 p-2">
+        <img id="modal-img" src="" alt="Obra" class="max-h-[70vh] w-auto object-contain">
+      </div>
+
+      <!-- Columna Derecha: Información Curatorial y Mapa -->
+      <div class="md:w-2/5 p-6 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div>
+            <span id="modal-tag" class="text-xs uppercase px-2 py-0.5 border border-zinc-700 text-zinc-400"></span>
+            <h2 id="modal-titulo" class="text-2xl font-bold uppercase text-white mt-2"></h2>
+            <p id="modal-autor" class="text-sm text-zinc-400"></p>
+          </div>
+
+          <div class="border-t border-zinc-800 pt-3 text-xs space-y-2 text-zinc-300">
+            <div><strong class="text-zinc-500">UBICACIÓN:</strong> <span id="modal-ubicacion"></span></div>
+            <div><strong class="text-zinc-500">SOPORTE:</strong> <span id="modal-soporte"></span></div>
+            <div><strong class="text-zinc-500">TÉCNICA:</strong> <span id="modal-tecnica"></span></div>
+            <div><strong class="text-zinc-500">FECHA REGISTRO:</strong> <span id="modal-fecha"></span></div>
+            <div><strong class="text-zinc-500">ESTADO:</strong> <span id="modal-estado" class="text-emerald-400"></span></div>
+          </div>
+
+          <div class="border-t border-zinc-800 pt-3 text-xs leading-relaxed text-zinc-300">
+            <strong class="text-zinc-500 block mb-1">LECTURA CURATORIAL:</strong>
+            <p id="modal-curaduria"></p>
+          </div>
+        </div>
+
+        <!-- Mini Mapa Embebido de Ubicación Exacta -->
+        <div class="mt-6 border-t border-zinc-800 pt-4">
+          <div class="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 flex justify-between">
+            <span>Coordenadas territoriales</span>
+            <span id="modal-coords"></span>
+          </div>
+          <div id="mapa-modal" class="h-40 w-full border border-zinc-800 dark-map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-zinc-800 p-6 text-center text-xs text-zinc-500">
+    Proyecto Curatorial Colectivo • Estudiantes Lic. en Artes / UNQ • Quilmes, Buenos Aires.
+  </footer>
+
+  <!-- SCRIPT CON DATOS Y LÓGICA -->
+  <script>
+    // ==========================================
+    // 1. BASE DE DATOS DE OBRAS (FÁCIL DE EDITAR)
+    // ==========================================
+    // Para sumar fotos nuevas, simplemente copiás y pegás un bloque {} nuevo acá abajo:
+    const obrasData = [
+      {
+        id: 1,
+        titulo: "Bestiario Verde & Wildstyle",
+        categoria: "wildstyle",
+        autor: "Firma / Crew en muro",
+        ubicacion: "Bernal Oeste, frentes de galpones industriales",
+        soporte: "Muro perimetral de bloques de hormigón",
+        tecnica: "Aerosol a mano alzada",
+        fecha: "Octubre 2024",
+        estado: "Activa",
+        coords: [-34.7085, -58.2831],
+        imagen: "img/obra1.jpg", // acá pones la ruta a tu foto
+        curaduria: "Composición que combina una criatura reptiliana monocroma con tipografía wildstyle de alto contraste, articulando el bloque de hormigón con la vereda pública."
+      },
+      {
+        id: 2,
+        titulo: "Escorpiones en guardia",
+        categoria: "wildstyle",
+        autor: "Firma: LUZB",
+        ubicacion: "Quilmes Residencial, muro de vivienda",
+        soporte: "Pared revocada y portón de chapa",
+        tecnica: "Aerosol multicapa y brillos",
+        fecha: "Octubre 2024",
+        estado: "Activa",
+        coords: [-34.7231, -58.2589],
+        imagen: "img/obra2.jpg",
+        curaduria: "Pieza centrada flanqueada por dos escorpiones en claroscuro. La obra coloniza la puerta de chapa lateral unificando la fachada urbana."
+      },
+      {
+        id: 3,
+        titulo: "A reír que nacimos llorando",
+        categoria: "frases",
+        autor: "Intervención anónima",
+        ubicacion: "Rampa paso peatonal bajo vías del Tren Roca",
+        soporte: "Muro de contención de hormigón",
+        tecnica: "Aerosol amarillo / Caligrafía directa",
+        fecha: "Septiembre 2024",
+        estado: "Activa",
+        coords: [-34.7176, -58.2678],
+        imagen: "img/obra3.jpg",
+        curaduria: "Poesía de tránsito. Acompaña el descenso del transeúnte hacia el bajo vías, generando un choque poético con el entorno de catenarias y rejas metálicas."
+      },
+      {
+        id: 4,
+        titulo: "Palimpsesto del Bajo Nivel: Ricardo Iorio",
+        categoria: "palimpsesto",
+        autor: "Múltiples intervenciones colectivas",
+        ubicacion: "Túnel peatonal bajo vías",
+        soporte: "Pared subterránea de paso público",
+        tecnica: "Paste-up (afiche), aerosol, stencil y tags",
+        fecha: "Noviembre 2023 - 2024",
+        estado: "Evolución constante / Capas superpuestas",
+        coords: [-34.7180, -58.2672],
+        imagen: "img/obra4.jpg",
+        curaduria: "Espacio de memoria popular y santoral suburbano con homenaje a Ricardo Iorio ('La H no murió'), rodeado por capas continuas de tags y adhesivos."
+      },
+      {
+        id: 5,
+        titulo: "CBA Perro con visera",
+        categoria: "personajes",
+        autor: "Firma: CBA PERRO",
+        ubicacion: "Quilmes, esquina fabril",
+        soporte: "Pared de ladrillo visto a la vista",
+        tecnica: "Aerosol azul y blanco sobre ladrillo",
+        fecha: "Agosto 2024",
+        estado: "Activa",
+        coords: [-34.7295, -58.2520],
+        imagen: "img/obra5.jpg",
+        curaduria: "Ícono gráfico sintético de la cultura de esquina conurbana. El uso del contraste entre el azul brillante y el ladrillo crudo otorga alta visibilidad al paso vehicular."
+      },
+      {
+       id: 6,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 7,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 8,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 9,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 10,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 11,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 12,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 13,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 14,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+},
+{
+  id: 15,
+  titulo: "Título de la obra o S/T",
+  categoria: "personajes", // o 'wildstyle', 'palimpsesto', 'frases'
+  autor: "Firma identificable o Anónimo",
+  ubicacion: "Esquina o punto de referencia en Quilmes/Bernal",
+  soporte: "Persiana metálica comercial / Muro de hormigón",
+  tecnica: "Aerosol negro / Stencil",
+  fecha: "Octubre 2024",
+  estado: "Activa",
+  coords: [-34.7245, -58.2612], // Latitud y longitud de la obra
+  imagen: "img/tu-nueva-foto.jpg",
+  curaduria: "Texto donde describen el valor de la obra y el diálogo con la calle."
+}
+    ];
+
+    // ==========================================
+    // 2. RENDERIZADO DE LA GALERÍA
+    // ==========================================
+    const galeria = document.getElementById("galeria");
+
+    function cargarGaleria(obras) {
+      galeria.innerHTML = "";
+      obras.forEach(obra => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "group border border-zinc-800 bg-zinc-900/40 hover:border-zinc-500 transition duration-300 cursor-pointer overflow-hidden flex flex-col justify-between";
+        tarjeta.onclick = () => abrirModal(obra.id);
+
+        tarjeta.innerHTML = `
+          <div class="h-64 overflow-hidden bg-zinc-950 relative">
+            <img src="${obra.imagen}" alt="${obra.titulo}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90 group-hover:opacity-100">
+            <span class="absolute bottom-2 left-2 text-[10px] bg-black/80 px-2 py-0.5 uppercase border border-zinc-700">
+              ${obra.categoria}
+            </span>
+          </div>
+          <div class="p-4 border-t border-zinc-800">
+            <h3 class="text-base font-bold text-white group-hover:text-zinc-200 uppercase">${obra.titulo}</h3>
+            <p class="text-xs text-zinc-400 mt-1 truncate">${obra.ubicacion}</p>
+            <div class="mt-3 flex justify-between items-center text-[11px] text-zinc-500 border-t border-zinc-800/60 pt-2">
+              <span>${obra.autor}</span>
+              <span class="text-zinc-400 group-hover:translate-x-1 transition">Ver ficha →</span>
+            </div>
+          </div>
+        `;
+        galeria.appendChild(tarjeta);
+      });
+    }
+
+    // ==========================================
+    // 3. FILTROS
+    // ==========================================
+    function filtrar(categoria) {
+      document.querySelectorAll(".filtro-btn").forEach(btn => {
+        btn.classList.remove("bg-white", "text-black", "border-white");
+        btn.classList.add("text-zinc-400", "border-zinc-700");
+      });
+      event.target.classList.add("bg-white", "text-black", "border-white");
+      event.target.classList.remove("text-zinc-400", "border-zinc-700");
+
+      if (categoria === 'todas') {
+        cargarGaleria(obrasData);
+      } else {
+        const filtradas = obrasData.filter(o => o.categoria === categoria);
+        cargarGaleria(filtradas);
+      }
+    }
+
+    // ==========================================
+    // 4. MODAL Y MAPA LEAFLET INTERACTIVO
+    // ==========================================
+    let mapInstance = null;
+
+    function abrirModal(id) {
+      const obra = obrasData.find(o => o.id === id);
+      if (!obra) return;
+
+      document.getElementById("modal-img").src = obra.imagen;
+      document.getElementById("modal-titulo").innerText = obra.titulo;
+      document.getElementById("modal-tag").innerText = obra.categoria;
+      document.getElementById("modal-autor").innerText = "Autor/Registro: " + obra.autor;
+      document.getElementById("modal-ubicacion").innerText = obra.ubicacion;
+      document.getElementById("modal-soporte").innerText = obra.soporte;
+      document.getElementById("modal-tecnica").innerText = obra.tecnica;
+      document.getElementById("modal-fecha").innerText = obra.fecha;
+      document.getElementById("modal-estado").innerText = obra.estado;
+      document.getElementById("modal-curaduria").innerText = obra.curaduria;
+      document.getElementById("modal-coords").innerText = `${obra.coords[0]}, ${obra.coords[1]}`;
+
+      document.getElementById("modal").classList.remove("hidden");
+
+      // Inicializar o centrar mapa en las coordenadas
+      setTimeout(() => {
+        if (!mapInstance) {
+          mapInstance = L.map('mapa-modal', { zoomControl: false }).setView(obra.coords, 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(mapInstance);
+        } else {
+          mapInstance.setView(obra.coords, 15);
+        }
+
+        // Limpiar pines viejos y poner el nuevo
+        mapInstance.eachLayer((layer) => {
+          if (layer instanceof L.Marker) mapInstance.removeLayer(layer);
+        });
+
+        L.marker(obra.coords).addTo(mapInstance)
+          .bindPopup(`<b>${obra.titulo}</b><br>${obra.ubicacion}`).openPopup();
+        
+        mapInstance.invalidateSize();
+      }, 200);
+    }
+
+    function cerrarModal() {
+      document.getElementById("modal").classList.add("hidden");
+    }
+
+    // Inicializar la web al cargar
+    cargarGaleria(obrasData);
+  </script>
+</body>
+</html>
